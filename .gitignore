@@ -3,5 +3,6 @@
 *.pdf
 *.t
 *.pkl
+trec_eval/
 myenv/
 
