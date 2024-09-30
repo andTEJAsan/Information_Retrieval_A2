@@ -3,7 +3,7 @@ import math
 import nltk
 import typing
 import re
-from params import STOPWORD_REMOVAL, LOWERCASE, STEMMING
+from params import STOPWORD_REMOVAL, LOWERCASE, STEMMING, MU
 DELIMITERS =[' ', ',', '.', ':', ';', '"', '\'']
 def parse_tsv(file_path):
     with open(file_path, 'r') as file:
@@ -30,7 +30,7 @@ class LanguageModel:
 		self.word_counts = {}
 		self.count_occurrences()
 		self.base_model = None
-		self.mu = None
+		self.mu = MU
 		self.smoother = None
 
 	def tokenize_sentences(self):
@@ -62,7 +62,7 @@ class LanguageModel:
 		mu = self.mu
 		self.smoother = collection_model	
 		for word in self.word_counts:
-			self.probs[word] = (self.word_counts[word] + mu * collection_model.probs[word]) / (len(self.tokens) + mu)
+			self.probs[word] = (self.word_counts[word] + mu * collection_model.probs.get(word, 0)) / (len(self.tokens) + mu)
 		for word in collection_model.word_counts:
 			if word not in self.probs:
 				self.probs[word] = mu * collection_model.probs[word] / (len(self.tokens) + mu)
@@ -73,11 +73,15 @@ class LanguageModel:
 			else:
 				self.word_counts[word] = model.word_counts[word]
 	def referesh_probs(self):
+		tot_toks = sum(self.word_counts.values())
 		for word in self.word_counts:
-			self.probs[word] = self.word_counts[word] / len(self.tokens)
+			self.probs[word] = self.word_counts[word] / tot_toks
 	def probability(self, word):
 		return self.probs.get(word, 0)
 	# computes D(M_s || M_c) = sum_{w in V} P(w|M_s) log (P(w|M_s) / P(w|M_c))
+	def probability(self, word, background_smoother):
+		tf = self.word_counts.get(word, 0)
+		return (tf + self.mu * background_smoother.probs.get(word, 0)) / (len(self.tokens) + mu)
 
 	def KL_div(self, rel_mod):
 		# self = doc_model
@@ -86,7 +90,7 @@ class LanguageModel:
 		doc_probs = []
 		for word in rel_mod.probs.keys():
 			rel_probs.append(rel_mod.probs[word])
-			doc_probs.append(self.probs.get(word, 0))
+			doc_probs.append(self.probability(word, rel_mod))
 		rel_probs = np.array(rel_probs)
 		doc_probs = np.array(doc_probs)
 		kl_div = np.sum(doc_probs * np.log(doc_probs / rel_probs))

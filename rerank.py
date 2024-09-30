@@ -1,6 +1,8 @@
 from collections import defaultdict
+import time
 from models import LanguageModel
 import sys, os
+import pickle
 query_file, top_100_file, collection_file, output_file, expansion_file = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 print(sys.argv)
 
@@ -48,25 +50,43 @@ def get_doc_from_docid(docfile):
 	return title, body
 # for each query, get the languagee models
 
-titles, bodies = get_doc_from_docid(collection_file)
-text_from_qid = get_text_from_qid(query_file)
-docs_from_query= get_docs_from_query(top_100_file)
+# with open('titles.pkl', 'wb') as
+if os.path.exists('./titles.pkl'):
+	titles = pickle.load(open('titles.pkl', 'rb'))
+	bodies = pickle.load(open('bodies.pkl', 'rb'))
+	text_from_qid = pickle.load(open('text_from_qid.pkl', 'rb'))
+	docs_from_query = pickle.load(open('docs_from_query.pkl', 'rb'))
+else:
+	titles, bodies = get_doc_from_docid(collection_file)
+	text_from_qid = get_text_from_qid(query_file)
+	docs_from_query= get_docs_from_query(top_100_file)
+	pickle.dump(titles, open('titles.pkl', 'wb'))
+	pickle.dump(bodies, open('bodies.pkl', 'wb'))
+	pickle.dump(text_from_qid, open('text_from_qid.pkl', 'wb'))
+	pickle.dump(docs_from_query, open('docs_from_query.pkl', 'wb'))
+    
 
 for qid in text_from_qid.keys():
-	corpus_lm = LanguageModel()
+	t = time.time()
+	corpus_lm = LanguageModel([])
 	docids = docs_from_query[qid]
 	langmods = []
-	for docid in docids:
-		doc_lm = LanguageModel([titles[docid], bodies[docid]])
+	doc_lms = [LanguageModel([titles[docid], bodies[docid]]) for docid in docids]
+
+
+	for i, doc_lm in enumerate(doc_lms):
 		corpus_lm.combine_model(doc_lm)
-		langmods.append((doc_lm, docid))
+		langmods.append((doc_lm, docids[i]))
+	corpus_lm.referesh_probs()
 	qlm = LanguageModel([text_from_qid[qid]])
 	qlm.dirichlet_smooth(corpus_lm)
 	langkl = []
 	for (doc_lm, docid) in langmods:
 		langkl.append(( -doc_lm.KL_div(qlm), docid ))
+	langkl.sort()
 	# langmods.sort(key= lambda x : -x[0].KL_div(qlm))
 	print(f"langkl = {langkl}")
+	print(f"time taken = {time.time() - t}")
 
 
     
