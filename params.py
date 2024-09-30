@@ -2,4 +2,4 @@ STOPWORD_REMOVAL = True
 LOWERCASE = True
 STEMMING = True
 NUMS = False
-MU = 0.2
+MU = 100

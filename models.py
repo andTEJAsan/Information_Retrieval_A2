@@ -5,6 +5,7 @@ import typing
 import re
 from params import STOPWORD_REMOVAL, LOWERCASE, STEMMING, MU
 DELIMITERS =[' ', ',', '.', ':', ';', '"', '\'']
+nltk.download('popular')
 def parse_tsv(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -81,7 +82,7 @@ class LanguageModel:
 	# computes D(M_s || M_c) = sum_{w in V} P(w|M_s) log (P(w|M_s) / P(w|M_c))
 	def probability(self, word, background_smoother):
 		tf = self.word_counts.get(word, 0)
-		return (tf + self.mu * background_smoother.probs.get(word, 0)) / (len(self.tokens) + mu)
+		return (tf + self.mu * background_smoother.probs.get(word, 0)) / (len(self.tokens) + self.mu)
 
 	def KL_div(self, rel_mod):
 		# self = doc_model

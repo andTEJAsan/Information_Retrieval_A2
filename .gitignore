@@ -1,5 +1,7 @@
 *.tsv
 *.txt
 *.pdf
+*.t
+*.pkl
 myenv/
 
