@@ -20,14 +20,14 @@ def get_docs_from_query(top_100_file):
 			docs_for_query[query_id].append(doc_id)
 
 	return docs_for_query
-# def get_text_from_qid(query_file):
-#     text_from_qid = {}
-# 	with open(query_file, 'r') as file:
-# 		next(file)
-# 		for line in file:
-# 			qid, text = line.strip().split('\t')
-# 			text_from_qid[qid] = text
-# 	return text_from_qikkk
+def get_text_from_qid(query_file):
+	text_from_qid = {}
+	with open(query_file, 'r') as file:
+		next(file)
+		for line in file:
+			qid, text = line.strip().split('\t')
+			text_from_qid[qid] = text
+	return text_from_qid
 
 def get_doc_from_docid(docfile):
     # docid, url, title, body
@@ -35,17 +35,24 @@ def get_doc_from_docid(docfile):
 	body = {}
 	with open(docfile, 'r') as file:
 		for line in file:
-			docid, url, tit, bod = line.strip().split('\t')
+			x = ((line.strip().split('\t')))
+			# docid, url, tit, bod = line.strip().split('\t')
+			docid = x[0]
+			bod = x[-1]
+			if(len(x) > 2):
+				tit = x[2]
+			else:
+				tit = ''
 			title[docid] =  tit
 			body[docid] = bod
 	return title, body
 # for each query, get the languagee models
 
 get_doc_from_docid(collection_file)
-# get_text_from_qid(query_file)
+get_text_from_qid(query_file)
 get_docs_from_query(top_100_file)
 
-# for qid in text_from_qid.keys():
-# 	corpus_lm = LanguageModel()
+for qid in text_from_qid.keys():
+	corpus_lm = LanguageModel()
 
     
