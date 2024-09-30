@@ -48,11 +48,19 @@ def get_doc_from_docid(docfile):
 	return title, body
 # for each query, get the languagee models
 
-get_doc_from_docid(collection_file)
-get_text_from_qid(query_file)
-get_docs_from_query(top_100_file)
+titles, bodies = get_doc_from_docid(collection_file)
+text_from_qid = get_text_from_qid(query_file)
+docs_from_query= get_docs_from_query(top_100_file)
 
 for qid in text_from_qid.keys():
 	corpus_lm = LanguageModel()
+	docids = docs_from_query[qid]
+	langmods = []
+	for docid in docids:
+		doc_lm = LanguageModel([titles[docid], bodies[docid]])
+		corpus_lm.combine_model(doc_lm)
+		langmods.append((doc_lm, docid))
+	qlm = LanguageModel([text_from_qid[qid]])
+
 
     
