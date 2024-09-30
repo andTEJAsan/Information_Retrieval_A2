@@ -61,6 +61,12 @@ for qid in text_from_qid.keys():
 		corpus_lm.combine_model(doc_lm)
 		langmods.append((doc_lm, docid))
 	qlm = LanguageModel([text_from_qid[qid]])
+	qlm.dirichlet_smooth(corpus_lm)
+	langkl = []
+	for (doc_lm, docid) in langmods:
+		langkl.append(( -doc_lm.KL_div(qlm), docid ))
+	# langmods.sort(key= lambda x : -x[0].KL_div(qlm))
+	print(f"langkl = {langkl}")
 
 
     
