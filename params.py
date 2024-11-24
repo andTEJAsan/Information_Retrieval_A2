@@ -1,5 +1,7 @@
 STOPWORD_REMOVAL = True
 LOWERCASE = True
 STEMMING = True
-NUMS = False
+NUMS = True
 MU = 100
+TOPK = 20
+LAMBDA = 0.5
